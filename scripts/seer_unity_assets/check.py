@@ -10,9 +10,11 @@ from scripts.seer_unity_assets.update import get_manifest_path
 
 def get_current_version(package_name: str) -> str:
     res = httpx.get(f"https://raw.githubusercontent.com/SeerAPI/seer-unity-assets/refs/heads/main/{get_manifest_path(package_name)}")
-    res.raise_for_status()
-    return res.json()["version"]
-
+    try:
+        res.raise_for_status()
+        return res.json()["version"]
+    except httpx.HTTPStatusError:
+        return "0.0.0"
 
 def check_update(package_name: str) -> bool:
     current_version = get_current_version(package_name)

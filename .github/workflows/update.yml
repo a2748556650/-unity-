@@ -31,8 +31,7 @@ jobs:
           path: 'seer-unity-assets'
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 1
-      
-      # 步骤 4: 运行数据处理脚本
+
       - name: 更新 seer-unity-assets
         id: update
         working-directory: ${{ steps.checkout-repo.outputs.repo-path }}
@@ -40,17 +39,6 @@ jobs:
           echo "🚀 开始处理数据..."
           uv run ../scripts/seer_unity_assets/update.py
           echo "✅ 数据处理完成"
-      
-      # 步骤 5: 显示结果
-      - name: 显示处理结果
-        if: always()
-        working-directory: ${{ steps.checkout-repo.outputs.repo-path }}
-        run: |
-          echo "=== Git 状态 ==="
-          git status
-          echo ""
-          echo "=== 最新提交 ==="
-          git log -1 --stat
 
   update-config-sources:
     runs-on: ubuntu-latest

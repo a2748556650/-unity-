@@ -1,0 +1,75 @@
+name: '检出仓库'
+description: '检出仓库并配置 Git 用户，用于数据处理流水线'
+author: 'SeerAPI'
+
+inputs:
+  repository:
+    description: '仓库名称（格式：owner/repo）'
+    required: true
+
+  path:
+    description: '检出到的本地路径'
+    required: false
+    default: 'data-repo'
+
+  token:
+    description: 'GitHub token（用于推送）'
+    required: false
+    default: ${{ github.token }}
+  
+  fetch-depth:
+    description: 'Git 历史深度（1 表示浅克隆）'
+    required: false
+    default: '1'
+
+  branch:
+    description: '要检出的分支'
+    required: false
+    default: 'main'
+
+  username:
+    description: 'Git 用户名'
+    required: false
+    default: 'github-actions[bot]'
+  
+  email:
+    description: 'Git 邮箱'
+    required: false
+    default: 'github-actions[bot]@users.noreply.github.com'
+
+outputs:
+  repo-path:
+    description: '仓库的本地路径'
+    value: ${{ inputs.path }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: 检出仓库
+      uses: actions/checkout@v4
+      with:
+        ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+        repository: ${{ inputs.repository }}
+        path: ${{ inputs.path }}
+        token: ${{ inputs.token }}
+        fetch-depth: ${{ inputs.fetch-depth }}
+        ref: ${{ inputs.branch }}
+    
+    - name: 配置 Git 用户
+      shell: bash
+      working-directory: ${{ inputs.path }}
+      run: |
+        echo "⚙️  配置 Git 用户信息..."
+        git config user.name "${{ inputs.username }}"
+        git config user.email "${{ inputs.email }}"
+        echo "✅ Git 配置完成"
+    
+    - name: 显示仓库信息
+      shell: bash
+      working-directory: ${{ inputs.path }}
+      run: |
+        echo "=== 仓库信息 ==="
+        echo "仓库: ${{ inputs.repository }}"
+        echo "分支: $(git branch --show-current)"
+        echo "最新提交: $(git log -1 --oneline)"
+        echo "工作目录: ${{ inputs.path }}"

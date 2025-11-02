@@ -1,0 +1,71 @@
+name: '设置环境'
+description: '初始化 Python 环境和依赖，用于所有数据处理工作流'
+author: 'SeerAPI'
+
+inputs:
+  python-version:
+    description: 'Python 版本'
+    required: false
+    default: '3.10'
+  
+  cache-key-suffix:
+    description: '缓存键后缀（用于区分不同的缓存）'
+    required: false
+    default: ''
+  
+  install-dependencies:
+    description: '是否安装依赖'
+    required: false
+    default: 'true'
+  
+  working-directory:
+    description: '工作目录（用于安装依赖）'
+    required: false
+    default: '.'
+
+outputs:
+  python-version:
+    description: '安装的 Python 版本'
+    value: ${{ steps.setup-python.outputs.python-version }}
+  
+  cache-hit:
+    description: '是否命中缓存'
+    value: ${{ steps.setup-python.outputs.cache-hit }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: 设置 Python ${{ inputs.python-version }}
+      id: setup-python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+        cache: 'pip'
+        cache-dependency-path: |
+          **/pyproject.toml
+          **/requirements.txt
+          **/uv.lock
+    
+    - name: 安装 uv（快速包管理器）
+      if: inputs.install-dependencies == 'true'
+      uses: astral-sh/setup-uv@v1
+      with:
+        uv-version: 'latest'
+    
+    - name: 安装依赖
+      if: inputs.install-dependencies == 'true'
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        echo "📥 安装项目依赖..."
+        uv sync
+
+    - name: 显示环境信息
+      shell: bash
+      run: |
+        echo "=== Python 环境信息 ==="
+        python --version
+        echo ""
+        echo "=== 已安装的包 ==="
+        uv pip list
+

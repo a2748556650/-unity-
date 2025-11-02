@@ -25,10 +25,9 @@ jobs:
 
       - name: 检查更新
         id: check-update
-        working-directory: ${{ steps.checkout-repo.outputs.repo-path }}
         run: |
           echo "🚀 开始检查更新..."
-          uv run ../scripts/seer_unity_assets/check.py
+          uv run scripts/seer_unity_assets/check.py
           echo "✅ 检查更新完成"
 
       - name: 检出仓库

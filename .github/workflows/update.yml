@@ -16,16 +16,25 @@ jobs:
     steps:
       - name: 检出脚本仓库
         uses: actions/checkout@v4
-      
+
       - name: 设置 Python 环境
         uses: ./.github/actions/setup-environment
         with:
           python-version: '3.10'
           install-dependencies: 'true'
 
+      - name: 检查更新
+        id: check-update
+        working-directory: ${{ steps.checkout-repo.outputs.repo-path }}
+        run: |
+          echo "🚀 开始检查更新..."
+          uv run ../scripts/seer_unity_assets/check.py
+          echo "✅ 检查更新完成"
+
       - name: 检出仓库
         id: checkout-repo
         uses: ./.github/actions/checkout-repo
+        if: steps.check-update.outputs.need_update == 'true'
         with:
           ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
           repository: ${{ env.UNITY_ASSETS_REPO }}
@@ -36,6 +45,7 @@ jobs:
       - name: 更新 seer-unity-assets
         id: update
         working-directory: ${{ steps.checkout-repo.outputs.repo-path }}
+        if: steps.check-update.outputs.need_update == 'true'
         run: |
           echo "🚀 开始处理数据..."
           uv run ../scripts/seer_unity_assets/update.py

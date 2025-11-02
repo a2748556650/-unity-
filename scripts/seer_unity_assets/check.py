@@ -20,7 +20,9 @@ def check_update(package_name: str) -> bool:
     return current_version != remote_version
 
 
-async def main():
+async def run():
+    albi0.load_all_plugins()
+
     need_update = False
     for package_name, config in CONFIG.items():
         current_version = get_current_version(package_name)
@@ -33,5 +35,7 @@ async def main():
         need_update = True
 
     write_to_github_output("need_update", "true" if need_update else "false")
-if __name__ == "__main__":
-    asyncio.run(main())
+
+
+def main():
+    asyncio.run(run())

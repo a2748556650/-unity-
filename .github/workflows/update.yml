@@ -27,7 +27,7 @@ jobs:
         id: check-update
         run: |
           echo "🚀 开始检查更新..."
-          uv run scripts/seer_unity_assets/check.py
+          uv run check-seer-assets
           echo "✅ 检查更新完成"
 
       - name: 检出仓库
@@ -47,7 +47,7 @@ jobs:
         if: steps.check-update.outputs.need_update == 'true'
         run: |
           echo "🚀 开始处理数据..."
-          uv run ../scripts/seer_unity_assets/update.py
+          uv run update-seer-assets
           echo "✅ 数据处理完成"
 
   update-config-sources:
@@ -78,5 +78,5 @@ jobs:
         working-directory: ${{ steps.checkout-repo.outputs.repo-path }}
         run: |
           echo "🚀 开始处理数据..."
-          uv run ../scripts/config_sources/update.py
+          uv run update-config-sources
           echo "✅ 数据处理完成"

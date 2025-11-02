@@ -35,7 +35,9 @@ async def process_package(
         )
 
 
-async def main():
+async def run():
+    albi0.load_all_plugins()
+
     manager = DataRepoManager.from_checkout('.')
     for package_name, config in CONFIG.items():
         remote_version = await albi0.get_remote_version(config["updater_name"])
@@ -54,5 +56,5 @@ async def main():
         write_to_github_output("has_update", "true")
 
 
-if __name__ == "__main__":
-    asyncio.run(main())
+def main():
+    asyncio.run(run())

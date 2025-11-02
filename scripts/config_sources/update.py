@@ -347,6 +347,3 @@ def main() -> None:
 
 	if manager.push():
 		write_to_github_output("has_update", "true")
-
-if __name__ == "__main__":
-	main()

@@ -27,6 +27,7 @@ jobs:
         id: checkout-repo
         uses: ./.github/actions/checkout-repo
         with:
+          ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
           repository: ${{ env.UNITY_ASSETS_REPO }}
           path: 'seer-unity-assets'
           token: ${{ secrets.GITHUB_TOKEN }}

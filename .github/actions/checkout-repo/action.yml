@@ -12,6 +12,11 @@ inputs:
     required: false
     default: 'data-repo'
 
+  ssh-key:
+    description: 'SSH 私钥（可选，用于 SSH 方式克隆）'
+    required: false
+    default: ''
+
   token:
     description: 'GitHub token（用于推送）'
     required: false
@@ -48,9 +53,9 @@ runs:
     - name: 检出仓库
       uses: actions/checkout@v4
       with:
-        ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
         repository: ${{ inputs.repository }}
         path: ${{ inputs.path }}
+        ssh-key: ${{ inputs.ssh-key }}
         token: ${{ inputs.token }}
         fetch-depth: ${{ inputs.fetch-depth }}
         ref: ${{ inputs.branch }}

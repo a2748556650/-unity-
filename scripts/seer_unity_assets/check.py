@@ -1,4 +1,5 @@
 import asyncio
+import sys
 
 import albi0
 import httpx
@@ -8,26 +9,30 @@ from scripts.seer_unity_assets.config import CONFIG
 from scripts.seer_unity_assets.update import get_manifest_path
 
 
-def get_current_version(package_name: str) -> str:
-    res = httpx.get(f"https://raw.githubusercontent.com/SeerAPI/seer-unity-assets/refs/heads/main/{get_manifest_path(package_name)}")
+def get_current_version(
+    repo_name: str,
+    branch: str,
+    package_name: str
+) -> str:
+    res = httpx.get(f"https://raw.githubusercontent.com/{repo_name}/refs/heads/{branch}/{get_manifest_path(package_name)}")
     try:
         res.raise_for_status()
         return res.json()["version"]
     except httpx.HTTPStatusError:
         return "0.0.0"
 
-def check_update(package_name: str) -> bool:
-    current_version = get_current_version(package_name)
+def check_update(repo_name: str, branch: str, package_name: str) -> bool:
+    current_version = get_current_version(repo_name, branch, package_name)
     remote_version = albi0.get_remote_version(package_name)
     return current_version != remote_version
 
 
-async def run():
+async def run(repo_name: str, branch: str):
     albi0.load_all_plugins()
 
     need_update = False
     for package_name, config in CONFIG.items():
-        current_version = get_current_version(package_name)
+        current_version = get_current_version(repo_name, branch, package_name)
         remote_version = await albi0.get_remote_version(config["updater_name"])
         if current_version == remote_version:
             print(f"📦 {package_name} 已是最新版本")
@@ -40,4 +45,11 @@ async def run():
 
 
 def main():
-    asyncio.run(run())
+    if len(sys.argv) < 3:
+        print("Usage: python check.py <repo_name> <branch>")
+        sys.exit(1)
+
+    repo_name = sys.argv[1]
+    branch = sys.argv[2]
+
+    asyncio.run(run(repo_name, branch))

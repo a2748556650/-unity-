@@ -27,7 +27,7 @@ jobs:
         id: check-update
         run: |
           echo "🚀 开始检查更新..."
-          uv run check-seer-assets
+          uv run check-seer-assets ${{ env.UNITY_ASSETS_REPO }} main
           echo "✅ 检查更新完成"
 
       - name: 检出仓库

@@ -1,5 +1,4 @@
 import asyncio
-from collections.abc import Callable, Coroutine
 from datetime import datetime
 import hashlib
 from itertools import chain
@@ -8,7 +7,7 @@ from typing import Any, TypeVar
 from abc import ABC, abstractmethod
 from pathlib import Path
 import zlib
-from typing_extensions import ParamSpec, override
+from typing_extensions import override
 
 import httpx
 import xmltodict
@@ -30,18 +29,6 @@ from scripts._common import DataRepoManager, write_to_github_output
 HTML5_BASE_URL = "https://seerh5.61.com"
 HTML5_VERSION_CHECK_URL = f"{HTML5_BASE_URL}/version/version.json?t={random.uniform(0.01, 0.09)}"
 UNITY_VERSION_CHECK_URL = "https://raw.githubusercontent.com/SeerAPI/seer-unity-assets/refs/heads/main/package-manifests/ConfigPackage.json"
-
-T_ParamSpec = ParamSpec('T_ParamSpec')
-T_Retval = TypeVar('T_Retval')
-
-def run_async_in_sync(
-	async_func: Callable[T_ParamSpec, Coroutine[Any, Any, T_Retval]],
-	*args: T_ParamSpec.args,
-	**kwargs: T_ParamSpec.kwargs,
-) -> T_Retval:
-	"""在同步函数中运行异步函数"""
-	loop = asyncio.get_event_loop()
-	return loop.run_until_complete(async_func(*args, **kwargs))
 
 
 def get_file_hash(data: bytes) -> str:
@@ -132,7 +119,7 @@ class Platform(ABC):
 		pass
 
 	@abstractmethod
-	def get_configs(self) -> None:
+	async def get_configs(self) -> None:
 		pass
 
 	def get_local_version(self) -> str:
@@ -215,7 +202,7 @@ class Flash(Platform):
 				filename.write_bytes(xml_data)
 	
 	@override
-	def get_configs(self) -> None:
+	async def get_configs(self) -> None:
 		self.get_coredll_configs()
 		self.get_prexml_configs()
 
@@ -266,7 +253,7 @@ class HTML5(Platform):
 		return str(self.get_version_json()["version"])
 
 	@override
-	def get_configs(self) -> None:
+	async def get_configs(self) -> None:
 		def build_tasks(tree: dict[str, Any], path_parts: list[str]) -> list[DownloadTask]:
 			tasks_local: list[DownloadTask] = []
 			for key, value in tree.items():
@@ -290,7 +277,7 @@ class HTML5(Platform):
 			version_json['files']['resource']['config'],
 			['files', 'resource', 'config']
 		)
-		run_async_in_sync(download_data_async, tasks, output_dir=self.work_dir)
+		await download_data_async(tasks, output_dir=self.work_dir)
 
 
 class Unity(Platform):
@@ -301,7 +288,7 @@ class Unity(Platform):
 		return response.json()["version"]
 
 	@override
-	def get_configs(self) -> None:
+	async def get_configs(self) -> None:
 		parsers= parse.import_parser_classes()
 		temp_dir = Path("unity_temp")
 		temp_dir.mkdir(parents=True, exist_ok=True)
@@ -313,7 +300,7 @@ class Unity(Platform):
 			root_path="newseer/assets/game/configs/bytes",
 			ref="main",
 		)
-		run_async_in_sync(download_data_async, tasks, output_dir=temp_dir)
+		await download_data_async(tasks, output_dir=temp_dir)
 		print(f"开始解析 {temp_dir} 中的文件")
 		parse.run_all_parser(
 			parsers,
@@ -322,7 +309,7 @@ class Unity(Platform):
 		)
 
 
-def main() -> None:
+async def run() -> None:
 	manager = DataRepoManager.from_checkout('.')
 	platforms: list[tuple[str, Platform]] = [
 		("flash", Flash(Path("flash"))),
@@ -341,7 +328,7 @@ def main() -> None:
 			continue
 
 		print(f"{platform.work_dir} 更新中...")
-		platform.get_configs()
+		await platform.get_configs()
 		platform.save_remote_version()
 		time_str = datetime.now(timezone("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%SUTC%z")
 		manager.commit(
@@ -351,3 +338,7 @@ def main() -> None:
 
 	if manager.push():
 		write_to_github_output("has_update", "true")
+
+
+def main() -> None:
+	asyncio.run(run())

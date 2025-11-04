@@ -50,7 +50,10 @@ async def run():
         )
         print(f"✅ 资源包 {package_name} 更新完成")
         time_str = datetime.now(timezone("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%SUTC%z")
-        manager.commit(f"{package_name}: Update to {remote_version} | Time: {time_str}")
+        manager.commit_and_push(
+            f"{package_name}: Update to {remote_version} | Time: {time_str}",
+            files=["package-manifests/", f"{config['extractor_name']}/assets/"]
+        )
 
     if manager.push():
         write_to_github_output("has_update", "true")

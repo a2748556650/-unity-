@@ -75,8 +75,17 @@ jobs:
           fetch-depth: 1
 
       - name: 运行数据处理
+        id: update
         working-directory: ${{ steps.checkout-repo.outputs.repo-path }}
         run: |
           echo "🚀 开始处理数据..."
           uv run update-config-sources
           echo "✅ 数据处理完成"
+      
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v4
+        if: steps.update.outputs.has_update == 'true'
+        with:
+          token: ${{ secrets.PAT }}
+          repository: seerapi/api-data
+          event-type: config-source-update

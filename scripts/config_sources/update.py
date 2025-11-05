@@ -1,5 +1,4 @@
 import asyncio
-from datetime import datetime
 import hashlib
 from itertools import chain
 import random
@@ -11,7 +10,6 @@ from typing_extensions import override
 
 import httpx
 import xmltodict
-from pytz import timezone
 from solaris import parse
 
 from scripts.config_sources._download_github_directory import (
@@ -23,7 +21,7 @@ from scripts.config_sources._swf_handle import (
 	extract_binary_data,
 	extract_swf_data,
 )
-from scripts._common import DataRepoManager, write_to_github_output
+from scripts._common import DataRepoManager, get_current_time_str, write_to_github_output
 
 
 HTML5_BASE_URL = "https://seerh5.61.com"
@@ -330,9 +328,8 @@ async def run() -> None:
 		print(f"{platform.work_dir} 更新中...")
 		await platform.get_configs()
 		platform.save_remote_version()
-		time_str = datetime.now(timezone("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%SUTC%z")
 		manager.commit(
-			f"{name}: Update to {remote_version} | Time: {time_str}",
+			f"{name}: Update to {remote_version} | Time: {get_current_time_str()}",
 			files=[str(platform.work_dir)]
 		)
 

@@ -1,9 +1,11 @@
 """数据处理脚本的通用工具"""
 from contextlib import contextmanager
+from datetime import datetime
 from pathlib import Path
 from typing import Optional
 from git import Repo
 from git.exc import GitCommandError
+from pytz import timezone
 
 
 class DataRepoManager:
@@ -246,3 +248,7 @@ def write_to_github_output(name: str, value: str) -> None:
 			f.write("\nEOF\n")
 		else:
 			f.write(f"{name}={value}\n")
+
+
+def get_current_time_str():
+    return datetime.now(timezone("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%SUTC%z")

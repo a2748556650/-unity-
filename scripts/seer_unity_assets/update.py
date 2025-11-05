@@ -1,10 +1,8 @@
 import asyncio
-from datetime import datetime
 
 import albi0
-from pytz import timezone
 
-from scripts._common import DataRepoManager, write_to_github_output
+from scripts._common import DataRepoManager, get_current_time_str, write_to_github_output
 from scripts.seer_unity_assets.config import CONFIG
 
 def get_manifest_path(package_name: str) -> str:
@@ -49,9 +47,8 @@ async def run():
             update_args=config["update_args"],
         )
         print(f"✅ 资源包 {package_name} 更新完成")
-        time_str = datetime.now(timezone("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%SUTC%z")
         manager.commit_and_push(
-            f"{package_name}: Update to {remote_version} | Time: {time_str}",
+            f"{package_name}: Update to {remote_version} | Time: {get_current_time_str()}",
             files=["package-manifests/", f"{config['extractor_name']}/assets/"]
         )
 

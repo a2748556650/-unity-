@@ -78,10 +78,10 @@ jobs:
         id: checkout-repo
         uses: ./.github/actions/checkout-repo
         with:
-          # ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          # ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}  
           repository: ${{ env.CONFIG_SOURCE_REPO }}
           path: 'config-sources'
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT }}
           fetch-depth: 1
 
       - name: 运行数据处理

@@ -2,6 +2,12 @@ name: 数据仓库更新流水线
 
 on:
   workflow_dispatch:
+    inputs:
+      debug:
+        type: boolean
+        description: 'debug'
+        required: false
+        default: false
 
 env:
   UNITY_ASSETS_REPO: 'SeerAPI/seer-unity-assets'
@@ -56,7 +62,7 @@ jobs:
   update-config-sources:
     runs-on: ubuntu-latest
     needs: update-unity-assets
-    if: needs.update-unity-assets.outputs.has_update == 'true' 
+    if: ${{ needs.update-unity-assets.outputs.has_update == 'true' || inputs.debug_enabled }}
 
     steps:
       - name: 检出脚本仓库

@@ -1,6 +1,9 @@
 name: 数据仓库更新流水线
 
 on:
+  schedule:
+    - cron: '0,30 * * * *'
+
   workflow_dispatch:
     inputs:
       debug:

@@ -1,1 +1,38 @@
+name: Upstream Sync
 
+permissions:
+  contents: write
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # 每天国际标准时间 0点 运行一次
+  workflow_dispatch: # 允许你手动点按钮触发
+
+jobs:
+  sync_latest_from_upstream:
+    runs-on: ubuntu-latest
+    name: Sync latest commits from upstream repo
+
+    steps:
+    # 第一步：检出代码
+    - name: Checkout target branch
+      uses: actions/checkout@v3
+      
+    # 第二步：执行同步
+    - name: Sync upstream changes
+      id: sync
+      uses: aormsby/Fork-Sync-With-Upstream-action@v3.4
+      with:
+        target_sync_branch: main    # 你的主分支名（有的老仓库叫 master，这里要注意改）
+        # 必须设置 upstream_sync_repo ！！
+        # 格式：原作者用户名/原仓库名
+        # 比如你是从 SeerAPI fork 的 xx 项目，这里就填 SeerAPI/xx
+        upstream_sync_repo: SeerAPI/你的目标仓库名 
+        upstream_sync_branch: main  # 原仓库的主分支名
+        target_repo_token: ${{ secrets.GITHUB_TOKEN }} # 这一行自动生成的，不用改
+        test_mode: false
+
+    # (可选) 只有失败了才打印日志
+    - name: New commits found
+      if: steps.sync.outputs.has_new_commits == 'true'
+      run: echo "New commits were found to sync."
